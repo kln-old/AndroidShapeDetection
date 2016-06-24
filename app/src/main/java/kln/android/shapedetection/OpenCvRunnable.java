@@ -21,19 +21,46 @@ import kln.android.shapedetection.fragments.CannyEdgesFragment;
 import kln.android.shapedetection.fragments.ContoursFragment;
 
 /**
- * Created by kln on 6/24/16.
+ * Runnable implementationt that performes all OpenCv operations
  */
 public class OpenCvRunnable implements Runnable {
 
     private final static String TAG = OpenCvRunnable.class.getSimpleName();
 
+    /**
+     * Path to our base image
+     */
     private final String mImagePath;
+    /**
+     * Kernel size used to blur image
+     */
     private int mBlurKernelSize;
+    /**
+     * minimum threshold value for canny edge detector
+     */
     private int mCannyThresholdMin;
+    /**
+     * Maximum threshold value for canny edge detector
+     */
     private int mCannyThresholdMax;
+    /**
+     * Notifies if we've to use Otsu thresholds for canny edge detector
+     */
     private boolean mUseOtsuThreshold;
+    /**
+     * Type of contours to be detected
+     */
     private int mContourType;
 
+    /**
+     * Constructor
+     * @param imagePath
+     * @param blurKernelSize
+     * @param cannyThresholdMin
+     * @param cannyThresholdMax
+     * @param useOtsuThreshold
+     * @param contouType
+     */
     public OpenCvRunnable(final String imagePath,
                           final int blurKernelSize,
                           final int cannyThresholdMin,
@@ -67,44 +94,54 @@ public class OpenCvRunnable implements Runnable {
         }
     }
 
+    /**
+     * Runnable core
+     */
     @Override
     public void run() {
-        Mat orignalImage = Imgcodecs.imread(mImagePath);
+        final Mat orignalImage = Imgcodecs.imread(mImagePath);
+        Mat finalMat = new Mat(orignalImage.rows(), orignalImage.cols(), orignalImage.type());
         Mat tmpImage = new Mat();
         Mat detectedEdges = new Mat();
-        final List<MatOfPoint> contours = new ArrayList<>();
         final Mat hierarchy = new Mat();
+        final List<MatOfPoint> contours = new ArrayList<>();
         Scalar red = new Scalar(255, 0, 0);
         Scalar blue = new Scalar(0, 255, 0);
         Scalar green = new Scalar(0, 0, 255);
         Scalar white = new Scalar(255, 255, 255);
         Scalar black = new Scalar(0, 0, 0);
-        Mat finalMat = new Mat(orignalImage.rows(), orignalImage.cols(), orignalImage.type());
 
         // show original image
         BaseImageFragment.getInstance().showMatImage(orignalImage);
 
         // convert to grey scale
         Imgproc.cvtColor(orignalImage, tmpImage, Imgproc.COLOR_RGBA2GRAY);
-        // blur image
+
+        // blur image & show
         Imgproc.blur(tmpImage, tmpImage, new Size(mBlurKernelSize, mBlurKernelSize));
         BlurImageFragment.getInstance().showMatImage(tmpImage);
-        Mat tmp2 = new Mat();
-        // detect edges
+
+        // use threshold as set by preferences
         double maxThreshold = mCannyThresholdMax * 1.0;
         double minThreshold = mCannyThresholdMin * 1.0;
+        // if ostu threshold is enabled, then use it instead
         if (mUseOtsuThreshold) {
-            double otsuThreshold = Imgproc.threshold(tmpImage, tmp2, (double)0, (double)255, Imgproc.THRESH_BINARY | Imgproc.THRESH_OTSU);
+            Mat tmp2 = new Mat();
+            double otsuThreshold = Imgproc.threshold(tmpImage, tmp2, (double) 0, (double) 255, Imgproc.THRESH_BINARY | Imgproc.THRESH_OTSU);
             maxThreshold = otsuThreshold;
             minThreshold = otsuThreshold * 0.5;
         }
-        Imgproc.Canny(tmpImage, detectedEdges,minThreshold, maxThreshold);
+        // detect & show edges
+        Imgproc.Canny(tmpImage, detectedEdges, minThreshold, maxThreshold);
         CannyEdgesFragment.getInstance().showMatImage(detectedEdges);
+
         // find contours
         Imgproc.findContours(detectedEdges, contours, hierarchy, mContourType, Imgproc.CHAIN_APPROX_NONE);
-        // find rectangles
+
+        // iterate over all identified contours and analyze them
         MatOfPoint2f contour2f;
-        for (int i=0; i < contours.size(); i++) {
+        for (int i = 0; i < contours.size(); i++) {
+            // do some approximations to the idenitfied curves
             contour2f = new MatOfPoint2f(contours.get(i).toArray());
             double approxDistance = 0.05 * Imgproc.arcLength(contour2f, true);
             MatOfPoint2f approxCurve2f = new MatOfPoint2f();
@@ -112,49 +149,37 @@ public class OpenCvRunnable implements Runnable {
             MatOfPoint approxCurve = new MatOfPoint();
             approxCurve2f.convertTo(approxCurve, CvType.CV_32S);
 
-            // skip small or non-convex curves
+            // skip small areas
             if (Math.abs(Imgproc.contourArea(contour2f)) < 3000) {
                 Log.d(TAG, "small shape...skipping");
-                Imgproc.drawContours(finalMat, contours, i, white, 3, 8, hierarchy, 0, new Point(0,0));
+                // show for debugging visualization
+                Imgproc.drawContours(finalMat, contours, i, white, 3, 8, hierarchy, 0, new Point(0, 0));
                 ContoursFragment.getInstance().showMatImage(finalMat);
                 continue;
             }
 
+            // skip if concave
             if (!Imgproc.isContourConvex(approxCurve)) {
                 Log.d(TAG, "concave shape...skipping");
-                Imgproc.drawContours(finalMat, contours, i, green, 3, 8, hierarchy, 0, new Point(0,0));
+                // show for debugging visualization
+                Imgproc.drawContours(finalMat, contours, i, green, 3, 8, hierarchy, 0, new Point(0, 0));
                 ContoursFragment.getInstance().showMatImage(finalMat);
                 continue;
             }
+
+            // filter based on number of vertices
             int vertices = approxCurve.height();
             Log.d(TAG, "Vertices = " + vertices);
-            if ( vertices == 4) {
+            if (vertices == 4) {
                 Log.d(TAG, "Found rectangle");
                 //Imgproc.drawContours(detectedEdges, contours, i, white, -1);
-                Imgproc.drawContours(finalMat, contours, i, red, 3, 8, hierarchy, 0, new Point(0,0));
+                Imgproc.drawContours(finalMat, contours, i, red, 3, 8, hierarchy, 0, new Point(0, 0));
                 ContoursFragment.getInstance().showMatImage(finalMat);
             } else {
-                Imgproc.drawContours(finalMat, contours, i, blue, 3, 8, hierarchy, 0, new Point(0,0));
+                Imgproc.drawContours(finalMat, contours, i, blue, 3, 8, hierarchy, 0, new Point(0, 0));
                 ContoursFragment.getInstance().showMatImage(finalMat);
                 Log.d(TAG, "skipping vertices = " + vertices);
             }
         }
-
-
-        /*
-        String resultImagePath = Environment.getExternalStorageDirectory().getAbsolutePath() + File.separator + "edges.png";
-        if (Imgcodecs.imwrite(resultImagePath, detectedEdges)){
-            Log.i(TAG, "result image path - " + resultImagePath);
-            imageView.setImageDrawable(null);
-            imageView.setImageURI(Uri.fromFile(new File(resultImagePath)));
-        } else {
-            Log.e(TAG, "Failed to write image");
-        }
-        Intent intent = new Intent();
-        intent.setAction(Intent.ACTION_VIEW);
-        intent.setDataAndType(Uri.fromFile(new File(resultImagePath)), "image/*");
-        startActivity(intent);
-        */
-
     }
 }

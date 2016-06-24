@@ -35,16 +35,33 @@ import kln.android.shapedetection.fragments.BlurImageFragment;
 import kln.android.shapedetection.fragments.CannyEdgesFragment;
 import kln.android.shapedetection.fragments.ContoursFragment;
 
+/**
+ * Main Activity for our Applications
+ */
 public class MainActivity extends AppCompatActivity {
+
 
     public static final String TAG = MainActivity.class.getSimpleName();
 
+    /**
+     * Request codes to handle on activity result
+     */
     private final int REQ_CODE_PICK_IMAGE = 1;
+
+    /**
+     * Request code to handle on permission result
+     */
     private final int PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
 
-    private CoordinatorLayout mBaseActivityLayout = null;
-
+    /**
+     * Flag to notify if OpenCV libs are available on the device
+     */
     private static boolean sOpenCVAvailable = true;
+
+    /**
+     * Base layout for the activity
+     */
+    private CoordinatorLayout mBaseActivityLayout = null;
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -61,30 +78,37 @@ public class MainActivity extends AppCompatActivity {
      */
     private ViewPager mViewPager;
 
-    private FloatingActionButton mActionButton;
     /**
-     * Number of tabs available
+     * The floating action buttion to perform several actions
+     */
+    private FloatingActionButton mActionButton;
+
+    /**
+     * Number of tabs/pages available in our {@link #mViewPager}
      */
     private final int NUM_TAB_VIEWS = 4;
 
+    /**
+     * URI of our original image picked by the user
+     */
     private Uri mBaseImageUri = null;
 
-    private enum FratmentTabPosition {
-        BASE_IMAGE_FRAGMENT,
-        BLUR_IMAGE_FRAGMENT,
-        CANNY_EDGE_FRAGMENT,
-        CONTOURS_FRAGMENT
-    }
-
+    /**
+     * Inidialize our object on activity created
+     * @param savedInstanceState
+     */
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        // Get & set app's toolbar
+        final Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
+        // Bind our base layer
         mBaseActivityLayout = (CoordinatorLayout) findViewById(R.id.main_content);
+
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -93,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
+        // Get & bind our action button with corresponding action
         mActionButton = (FloatingActionButton) findViewById(R.id.fab);
         mActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -102,9 +127,17 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+
+        // set default values to our preferences settings
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
     }
 
+
+    /**
+     * Show options menu when options btn is clicked
+     * @param menu menu generated from our menu_main.xml
+     * @return
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -112,6 +145,11 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * Handle menu options selected/clicked
+     * @param item menu item clicked
+     * @return
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle action bar item clicks here. The action bar will
@@ -121,6 +159,7 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
+            // start our preferences settings activity
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
             return true;
@@ -129,6 +168,12 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * Handle start activity return result
+     * @param requestCode request code we had provided to startActivity()
+     * @param resultCode
+     * @param imageReturnedIntent
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
         super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
@@ -136,12 +181,20 @@ public class MainActivity extends AppCompatActivity {
         switch (requestCode) {
             case REQ_CODE_PICK_IMAGE:
                 if (resultCode == RESULT_OK) {
+                    // extract image Uri
                     mBaseImageUri = imageReturnedIntent.getData();
+                    // start our analysis
                     start();
                 }
         }
     }
 
+    /**
+     * Handle permission request results
+     * @param requestCode request code provided requestPermission()
+     * @param permissions granted permission details
+     * @param grantResults granted permissions
+     */
     @Override
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
@@ -150,8 +203,10 @@ public class MainActivity extends AppCompatActivity {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // request grated to access & write to external storage. start our actions
                     launchImagePicker();
                 } else {
+                    // notify permission denial & setup retry
                     Snackbar.make(mBaseActivityLayout, "Permission Denied.", Snackbar.LENGTH_LONG)
                             .setAction("Request", new View.OnClickListener() {
                                 @Override
@@ -169,17 +224,23 @@ public class MainActivity extends AppCompatActivity {
     public void onResume()
     {
         super.onResume();
+        // check if opencv is available every time the app is refreshed/resumed
         OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_1_0, this, mBaseLoaderCallback);
     }
 
+    /**
+     * Callback to handle opencv loader
+     */
     private BaseLoaderCallback mBaseLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
             switch (status) {
+                // OpenCV available
                 case LoaderCallbackInterface.SUCCESS:
                     sOpenCVAvailable = true;
                     Log.i(TAG, "OpenCV successfully loaded!");
                     break;
+                // all other failure cases
                 case LoaderCallbackInterface.INCOMPATIBLE_MANAGER_VERSION:
                 case LoaderCallbackInterface.INIT_FAILED:
                 case LoaderCallbackInterface.INSTALL_CANCELED:
@@ -192,6 +253,11 @@ public class MainActivity extends AppCompatActivity {
         }
     };
 
+    /**
+     * Converts a Uri to string file path
+     * @param uri uri to convert
+     * @return a string of file path in Uri
+     */
     private String getPathFromUri(Uri uri) {
         String[] filePathColumn = {MediaStore.Images.Media.DATA};
 
@@ -205,8 +271,13 @@ public class MainActivity extends AppCompatActivity {
         return filePath;
     }
 
+    /**
+     * Start our opencv analysis.
+     */
     private void start() {
+        // check if opencv is available
         if (!sOpenCVAvailable) {
+            // if not availalbe, notify user & setup retry
             Snackbar.make(mBaseActivityLayout, "OpenCV not available", Snackbar.LENGTH_LONG)
                     .setAction("Retry", new View.OnClickListener() {
                         @Override
@@ -216,25 +287,40 @@ public class MainActivity extends AppCompatActivity {
                     }).show();
             return;
         }
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        int blurKernelSize = Integer.parseInt(preferences.getString(getString(R.string.preference_key_blur_kernel), getString(R.string.preference_default_value_blur_kernel)));
-        boolean useOtsu = preferences.getBoolean(getString(R.string.preference_key_canny_otsu), true);
-        int cannyMinThreshold = Integer.parseInt(preferences.getString(getString(R.string.preference_key_canny_threshold_min), getString(R.string.preference_default_value_canny_threshold_min)));
-        int cannyMaxThreshold = Integer.parseInt(preferences.getString(getString(R.string.preference_key_canny_threshold_max), getString(R.string.preference_default_value_canny_threshold_max)));
-        int contourType = Integer.parseInt(preferences.getString(getString(R.string.preference_key_contours_type), getString(R.string.preference_entry_value_contours_type_external)));
-        Log.d("KLN", "got shared preference " + blurKernelSize);
+        // opencv is available & successfully loaded. Continue to analyze
+        // Get our preferences
+        final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        final int blurKernelSize = Integer.parseInt(preferences.getString(getString(R.string.preference_key_blur_kernel),
+                getString(R.string.preference_default_value_blur_kernel)));
+        final boolean useOtsu = preferences.getBoolean(getString(R.string.preference_key_canny_otsu), true);
+        final int cannyMinThreshold = Integer.parseInt(preferences.getString(getString(R.string.preference_key_canny_threshold_min),
+                getString(R.string.preference_default_value_canny_threshold_min)));
+        final int cannyMaxThreshold = Integer.parseInt(preferences.getString(getString(R.string.preference_key_canny_threshold_max),
+                getString(R.string.preference_default_value_canny_threshold_max)));
+        final int contourType = Integer.parseInt(preferences.getString(getString(R.string.preference_key_contours_type),
+                getString(R.string.preference_entry_value_contours_type_external)));
+
+        // instantiate our opencv runnable
         OpenCvRunnable cvRunnable = new OpenCvRunnable(getPathFromUri(mBaseImageUri), blurKernelSize, cannyMinThreshold, cannyMaxThreshold, useOtsu, contourType);
+        // opencv actions are cpu demanding !!
+        // so, run all opencv actions on a separate thread so that our main thread is not blocked.
         Thread cvThread = new Thread(cvRunnable);
         cvThread.start();
     }
 
+    /**
+     * Launches system image picker to select an image
+     */
     private void launchImagePicker() {
-
         Intent i = new Intent(Intent.ACTION_PICK,
                 android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(i, REQ_CODE_PICK_IMAGE);
     }
 
+    /**
+     * Checks if we have required permission for our app
+     * @return true if we have permissions, false otherwise
+     */
     private boolean checkPermissions() {
         // permission to write to external storage
         if (ContextCompat.checkSelfPermission(this,
@@ -248,33 +334,40 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    /**
+     * Displays the requested fragment on our viewpager
+     * @param fragmentInstance fragment to be displayed
+     */
     public void showFragmentTab(final Object fragmentInstance) {
 
+        // first tab is base image
         if (fragmentInstance instanceof BaseImageFragment) {
             if (mViewPager.getCurrentItem() != 0){
                 mViewPager.setCurrentItem(0, true);
             }
             return;
         }
+        // second tab is blurred image
         if (fragmentInstance instanceof BlurImageFragment) {
             if (mViewPager.getCurrentItem() != 1) {
                 mViewPager.setCurrentItem(1, true);
             }
             return;
         }
+        // third tab is edges detected
         if (fragmentInstance instanceof CannyEdgesFragment) {
             if (mViewPager.getCurrentItem() != 2) {
                 mViewPager.setCurrentItem(2, true);
             }
             return;
         }
+        // fourth tab is the contours detected
         if (fragmentInstance instanceof ContoursFragment) {
             if (mViewPager.getCurrentItem() != 3) {
                 mViewPager.setCurrentItem(3, true);
             }
             return;
         }
-
     }
 
     /**

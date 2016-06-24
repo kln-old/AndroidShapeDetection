@@ -5,7 +5,7 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceFragment;
 
 /**
- * Created by kln on 6/24/16.
+ * Activity to handle our settings screen
  */
 public class SettingsActivity extends PreferenceActivity {
 
