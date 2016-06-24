@@ -2,4 +2,9 @@
     <string name="app_name">ShapeDetection</string>
     <string name="action_settings">Settings</string>
     <string name="section_format">Hello World from section: %1$d</string>
+    <string name="fragment_title_default">Title</string>
+    <string name="fragment_title_base_image">Original Image</string>
+    <string name="fragment_title_blur_image">Blurred Image</string>
+    <string name="fragment_title_canny_edges">Edges Detected</string>
+    <string name="fragment_title_contours">Contours Detected</string>
 </resources>
