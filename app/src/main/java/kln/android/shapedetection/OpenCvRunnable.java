@@ -59,7 +59,7 @@ public class OpenCvRunnable implements Runnable {
         double otsuThreshold = Imgproc.threshold(tmpImage, tmp2, (double)0, (double)255, Imgproc.THRESH_BINARY | Imgproc.THRESH_OTSU);
         double maxThreshold = otsuThreshold;
         double minThreshold = otsuThreshold * 0.5;
-        Imgproc.Canny(tmpImage, detectedEdges,30, 100);
+        Imgproc.Canny(tmpImage, detectedEdges,minThreshold, maxThreshold);
         CannyEdgesFragment.getInstance().showMatImage(detectedEdges);
         // find contours
         Imgproc.findContours(detectedEdges, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE);
