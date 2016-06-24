@@ -3,7 +3,9 @@ package kln.android.shapedetection;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.net.Uri;
+import android.provider.MediaStore;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -18,13 +20,13 @@ import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
 
-import android.widget.TextView;
+import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.LoaderCallbackInterface;
+import org.opencv.android.OpenCVLoader;
 
 import kln.android.shapedetection.fragments.BaseImageFragment;
 import kln.android.shapedetection.fragments.BlurImageFragment;
@@ -39,6 +41,8 @@ public class MainActivity extends AppCompatActivity {
     private final int PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
 
     private CoordinatorLayout mBaseActivityLayout = null;
+
+    private static boolean sOpenCVAvailable = true;
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -55,10 +59,20 @@ public class MainActivity extends AppCompatActivity {
      */
     private ViewPager mViewPager;
 
+    private FloatingActionButton mActionButton;
     /**
      * Number of tabs available
      */
     private final int NUM_TAB_VIEWS = 4;
+
+    private Uri mBaseImageUri = null;
+
+    private enum FratmentTabPosition {
+        BASE_IMAGE_FRAGMENT,
+        BLUR_IMAGE_FRAGMENT,
+        CANNY_EDGE_FRAGMENT,
+        CONTOURS_FRAGMENT
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,17 +91,15 @@ public class MainActivity extends AppCompatActivity {
         mViewPager = (ViewPager) findViewById(R.id.container);
         mViewPager.setAdapter(mSectionsPagerAdapter);
 
-
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        mActionButton = (FloatingActionButton) findViewById(R.id.fab);
+        mActionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (checkPermissions()) {
-                    start();
+                    launchImagePicker();
                 }
             }
         });
-
     }
 
     @Override
@@ -119,8 +131,8 @@ public class MainActivity extends AppCompatActivity {
         switch (requestCode) {
             case REQ_CODE_PICK_IMAGE:
                 if (resultCode == RESULT_OK) {
-                    Uri uri = imageReturnedIntent.getData();
-                    BaseImageFragment.getsIntance().setImage(uri);
+                    mBaseImageUri = imageReturnedIntent.getData();
+                    start();
                 }
         }
     }
@@ -133,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    start();
+                    launchImagePicker();
                 } else {
                     Snackbar.make(mBaseActivityLayout, "Permission Denied.", Snackbar.LENGTH_LONG)
                             .setAction("Request", new View.OnClickListener() {
@@ -148,8 +160,59 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_1_0, this, mBaseLoaderCallback);
+    }
+
+    private BaseLoaderCallback mBaseLoaderCallback = new BaseLoaderCallback(this) {
+        @Override
+        public void onManagerConnected(int status) {
+            switch (status) {
+                case LoaderCallbackInterface.SUCCESS:
+                    sOpenCVAvailable = true;
+                    Log.i(TAG, "OpenCV successfully loaded!");
+                    break;
+                case LoaderCallbackInterface.INCOMPATIBLE_MANAGER_VERSION:
+                case LoaderCallbackInterface.INIT_FAILED:
+                case LoaderCallbackInterface.INSTALL_CANCELED:
+                case LoaderCallbackInterface.MARKET_ERROR:
+                    sOpenCVAvailable = false;
+                    Log.i(TAG, "OpenCV Loader error code = " + status);
+                default:
+                    super.onManagerConnected(status);
+            }
+        }
+    };
+
+    private String getPathFromUri(Uri uri) {
+        String[] filePathColumn = {MediaStore.Images.Media.DATA};
+
+        Cursor cursor = getContentResolver().query(uri, filePathColumn, null, null, null);
+        cursor.moveToFirst();
+
+        int columnIndex = cursor.getColumnIndex(filePathColumn[0]);
+        String filePath = cursor.getString(columnIndex);
+        cursor.close();
+
+        return filePath;
+    }
+
     private void start() {
-        launchImagePicker();
+        if (!sOpenCVAvailable) {
+            Snackbar.make(mBaseActivityLayout, "OpenCV not available", Snackbar.LENGTH_LONG)
+                    .setAction("Retry", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View view) {
+                            start();
+                        }
+                    }).show();
+            return;
+        }
+        Thread cvThread = new Thread(new OpenCvRunnable(getPathFromUri(mBaseImageUri)));
+        cvThread.start();
     }
 
     private void launchImagePicker() {
@@ -172,6 +235,35 @@ public class MainActivity extends AppCompatActivity {
         return true;
     }
 
+    public void showFragmentTab(final Object fragmentInstance) {
+
+        if (fragmentInstance instanceof BaseImageFragment) {
+            if (mViewPager.getCurrentItem() != 0){
+                mViewPager.setCurrentItem(0, true);
+            }
+            return;
+        }
+        if (fragmentInstance instanceof BlurImageFragment) {
+            if (mViewPager.getCurrentItem() != 1) {
+                mViewPager.setCurrentItem(1, true);
+            }
+            return;
+        }
+        if (fragmentInstance instanceof CannyEdgesFragment) {
+            if (mViewPager.getCurrentItem() != 2) {
+                mViewPager.setCurrentItem(2, true);
+            }
+            return;
+        }
+        if (fragmentInstance instanceof ContoursFragment) {
+            if (mViewPager.getCurrentItem() != 3) {
+                mViewPager.setCurrentItem(3, true);
+            }
+            return;
+        }
+
+    }
+
     /**
      * A {@link FragmentPagerAdapter} that returns a fragment corresponding to
      * one of the sections/tabs/pages.
@@ -189,13 +281,13 @@ public class MainActivity extends AppCompatActivity {
 
             switch (position) {
                 case 0:
-                    return BaseImageFragment.getsIntance();
+                    return BaseImageFragment.getInstance();
                 case 1:
-                    return BlurImageFragment.getsIntance();
+                    return BlurImageFragment.getInstance();
                 case 2:
-                    return CannyEdgesFragment.getsIntance();
+                    return CannyEdgesFragment.getInstance();
                 case 3:
-                    return ContoursFragment.getsIntance();
+                    return ContoursFragment.getInstance();
             }
             return null;
         }
