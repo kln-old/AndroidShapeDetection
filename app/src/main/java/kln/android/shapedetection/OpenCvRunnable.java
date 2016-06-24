@@ -26,10 +26,45 @@ import kln.android.shapedetection.fragments.ContoursFragment;
 public class OpenCvRunnable implements Runnable {
 
     private final static String TAG = OpenCvRunnable.class.getSimpleName();
-    private final String mImagePath;
 
-    public OpenCvRunnable(final String imagePath) {
+    private final String mImagePath;
+    private int mBlurKernelSize;
+    private int mCannyThresholdMin;
+    private int mCannyThresholdMax;
+    private boolean mUseOtsuThreshold;
+    private int mContourType;
+
+    public OpenCvRunnable(final String imagePath,
+                          final int blurKernelSize,
+                          final int cannyThresholdMin,
+                          final int cannyThresholdMax,
+                          final boolean useOtsuThreshold,
+                          final int contouType) {
+
         mImagePath = imagePath;
+        mBlurKernelSize = blurKernelSize;
+        mCannyThresholdMin = cannyThresholdMin;
+        mCannyThresholdMax = cannyThresholdMax;
+        mUseOtsuThreshold = useOtsuThreshold;
+        switch (contouType) {
+            case 0:
+                mContourType = Imgproc.RETR_EXTERNAL;
+                break;
+            case 1:
+                mContourType = Imgproc.RETR_LIST;
+                break;
+            case 2:
+                mContourType = Imgproc.RETR_CCOMP;
+                break;
+            case 3:
+                mContourType = Imgproc.RETR_TREE;
+                break;
+            case 4:
+                mContourType = Imgproc.RETR_FLOODFILL;
+                break;
+            default:
+                mContourType = Imgproc.RETR_EXTERNAL;
+        }
     }
 
     @Override
@@ -52,17 +87,21 @@ public class OpenCvRunnable implements Runnable {
         // convert to grey scale
         Imgproc.cvtColor(orignalImage, tmpImage, Imgproc.COLOR_RGBA2GRAY);
         // blur image
-        Imgproc.blur(tmpImage, tmpImage, new Size(3,3));
+        Imgproc.blur(tmpImage, tmpImage, new Size(mBlurKernelSize, mBlurKernelSize));
         BlurImageFragment.getInstance().showMatImage(tmpImage);
         Mat tmp2 = new Mat();
         // detect edges
-        double otsuThreshold = Imgproc.threshold(tmpImage, tmp2, (double)0, (double)255, Imgproc.THRESH_BINARY | Imgproc.THRESH_OTSU);
-        double maxThreshold = otsuThreshold;
-        double minThreshold = otsuThreshold * 0.5;
+        double maxThreshold = mCannyThresholdMax * 1.0;
+        double minThreshold = mCannyThresholdMin * 1.0;
+        if (mUseOtsuThreshold) {
+            double otsuThreshold = Imgproc.threshold(tmpImage, tmp2, (double)0, (double)255, Imgproc.THRESH_BINARY | Imgproc.THRESH_OTSU);
+            maxThreshold = otsuThreshold;
+            minThreshold = otsuThreshold * 0.5;
+        }
         Imgproc.Canny(tmpImage, detectedEdges,minThreshold, maxThreshold);
         CannyEdgesFragment.getInstance().showMatImage(detectedEdges);
         // find contours
-        Imgproc.findContours(detectedEdges, contours, hierarchy, Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_NONE);
+        Imgproc.findContours(detectedEdges, contours, hierarchy, mContourType, Imgproc.CHAIN_APPROX_NONE);
         // find rectangles
         MatOfPoint2f contour2f;
         for (int i=0; i < contours.size(); i++) {

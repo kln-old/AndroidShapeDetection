@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="preference_entries_contours_type">
+        <item>@string/preference_entries_contours_type_external</item>
+        <item>@string/preference_entries_contours_type_list</item>
+        <item>@string/preference_entries_contours_type_ccomp</item>
+        <item>@string/preference_entries_contours_type_tree</item>
+        <item>@string/preference_entries_contours_type_floodfill</item>
+    </string-array>
+    <string-array name="preference_entry_values_contours_type">
+        <item>@string/preference_entry_value_contours_type_external</item>
+        <item>@string/preference_entry_value_contours_type_list</item>
+        <item>@string/preference_entry_value_contours_type_ccomp</item>
+        <item>@string/preference_entry_value_contours_type_tree</item>
+        <item>@string/preference_entry_value_contours_type_floodfill</item>
+    </string-array>
+</resources>

@@ -24,4 +24,23 @@
     <string name="preference_title_canny_threshold_max">Canny Max Threshold</string>
     <string name="preference_summary_canny_threshold_max">max threshold to be used for canny edge detection</string>
     <string name="preference_dialog_title_canny_threshold_max">Max Threshold</string>
+    <string name="preference_default_value_blur_kernel">3</string>
+    <string name="preference_default_value_canny_threshold_min">30</string>
+    <string name="preference_default_value_canny_threshold_max">200</string>
+    <string name="preference_category_contours">Contours Detection</string>
+    <string name="preference_key_contours_type">PreferenceKeyContoursType</string>
+    <string name="preference_title_contours_type">Type</string>
+    <string name="preference_summary_contours_type">contours detection type</string>
+    <string name="preference_dialog_title_contours_type">Select Contours Type</string>
+    <string name="preference_entries_contours_type_external">EXTERNAL</string>
+    <string name="preference_entries_contours_type_tree">TREE</string>
+    <string name="preference_entries_contours_type_list">LIST</string>
+    <string name="preference_entries_contours_type_ccomp">CCOMP</string>
+    <string name="preference_entries_contours_type_floodfill">FLOOD FILL</string>
+    <string name="preference_entry_value_contours_type_external">0</string>
+    <string name="preference_entry_value_contours_type_list">1</string>
+    <string name="preference_entry_value_contours_type_ccomp">2</string>
+    <string name="preference_entry_value_contours_type_tree">3</string>
+    <string name="preference_entry_value_contours_type_floodfill">4</string>
+
 </resources>

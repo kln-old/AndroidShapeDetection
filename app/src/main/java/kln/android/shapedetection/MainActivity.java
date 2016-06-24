@@ -2,9 +2,11 @@ package kln.android.shapedetection;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.preference.PreferenceManager;
 import android.provider.MediaStore;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
@@ -100,6 +102,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         });
+        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
     }
 
     @Override
@@ -213,7 +216,15 @@ public class MainActivity extends AppCompatActivity {
                     }).show();
             return;
         }
-        Thread cvThread = new Thread(new OpenCvRunnable(getPathFromUri(mBaseImageUri)));
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        int blurKernelSize = Integer.parseInt(preferences.getString(getString(R.string.preference_key_blur_kernel), getString(R.string.preference_default_value_blur_kernel)));
+        boolean useOtsu = preferences.getBoolean(getString(R.string.preference_key_canny_otsu), true);
+        int cannyMinThreshold = Integer.parseInt(preferences.getString(getString(R.string.preference_key_canny_threshold_min), getString(R.string.preference_default_value_canny_threshold_min)));
+        int cannyMaxThreshold = Integer.parseInt(preferences.getString(getString(R.string.preference_key_canny_threshold_max), getString(R.string.preference_default_value_canny_threshold_max)));
+        int contourType = Integer.parseInt(preferences.getString(getString(R.string.preference_key_contours_type), getString(R.string.preference_entry_value_contours_type_external)));
+        Log.d("KLN", "got shared preference " + blurKernelSize);
+        OpenCvRunnable cvRunnable = new OpenCvRunnable(getPathFromUri(mBaseImageUri), blurKernelSize, cannyMinThreshold, cannyMaxThreshold, useOtsu, contourType);
+        Thread cvThread = new Thread(cvRunnable);
         cvThread.start();
     }
 

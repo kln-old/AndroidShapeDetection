@@ -6,7 +6,9 @@
             android:key="@string/preference_key_blur_kernel"
             android:title="@string/preference_title_blur_kernel"
             android:summary="@string/preference_summary_blur_kernel"
-            android:dialogTitle="@string/preference_dialog_title_blur_kernel" />
+            android:dialogTitle="@string/preference_dialog_title_blur_kernel"
+            android:defaultValue="@string/preference_default_value_blur_kernel"
+            android:inputType="number"/>
     </PreferenceCategory>
 
     <PreferenceCategory
@@ -14,16 +16,34 @@
         <CheckBoxPreference
             android:key="@string/preference_key_canny_otsu"
             android:title="@string/preference_title_canny_otsu"
-            android:summary="@string/preference_summary_canny_otsu" />
+            android:summary="@string/preference_summary_canny_otsu"
+            android:defaultValue="true"/>
         <EditTextPreference
             android:key="@string/preference_key_canny_threshold_min"
             android:title="@string/preference_title_canny_threshold_min"
             android:summary="@string/preference_summary_canny_threshold_min"
-            android:dialogTitle="@string/preference_dialog_title_canny_threshold_min" />
+            android:dialogTitle="@string/preference_dialog_title_canny_threshold_min"
+            android:defaultValue="@string/preference_default_value_canny_threshold_min"
+            android:inputType="number"/>
         <EditTextPreference
             android:key="@string/preference_key_canny_threshold_max"
             android:title="@string/preference_title_canny_threshold_max"
             android:summary="@string/preference_summary_canny_threshold_max"
-            android:dialogTitle="@string/preference_dialog_title_canny_threshold_max" />
+            android:dialogTitle="@string/preference_dialog_title_canny_threshold_max"
+            android:defaultValue="@string/preference_default_value_canny_threshold_max"
+            android:inputType="number"/>
     </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/preference_category_contours">
+        <ListPreference
+            android:key="@string/preference_key_contours_type"
+            android:title="@string/preference_title_contours_type"
+            android:summary="@string/preference_summary_contours_type"
+            android:entries="@array/preference_entries_contours_type"
+            android:entryValues="@array/preference_entry_values_contours_type"
+            android:dialogTitle="@string/preference_dialog_title_contours_type"
+            android:defaultValue="@string/preference_entry_value_contours_type_external"/>
+    </PreferenceCategory>
+
 </PreferenceScreen>
