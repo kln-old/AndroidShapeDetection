@@ -1,7 +1,14 @@
 package kln.android.shapedetection;
 
+import android.Manifest;
+import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 
@@ -10,6 +17,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -24,6 +32,13 @@ import kln.android.shapedetection.fragments.CannyEdgesFragment;
 import kln.android.shapedetection.fragments.ContoursFragment;
 
 public class MainActivity extends AppCompatActivity {
+
+    public static final String TAG = MainActivity.class.getSimpleName();
+
+    private final int REQ_CODE_PICK_IMAGE = 1;
+    private final int PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE = 1;
+
+    private CoordinatorLayout mBaseActivityLayout = null;
 
     /**
      * The {@link android.support.v4.view.PagerAdapter} that will provide
@@ -52,6 +67,8 @@ public class MainActivity extends AppCompatActivity {
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        mBaseActivityLayout = (CoordinatorLayout) findViewById(R.id.main_content);
         // Create the adapter that will return a fragment for each of the three
         // primary sections of the activity.
         mSectionsPagerAdapter = new SectionsPagerAdapter(getSupportFragmentManager());
@@ -65,13 +82,13 @@ public class MainActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                if (checkPermissions()) {
+                    start();
+                }
             }
         });
 
     }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -93,6 +110,66 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent imageReturnedIntent) {
+        super.onActivityResult(requestCode, resultCode, imageReturnedIntent);
+
+        switch (requestCode) {
+            case REQ_CODE_PICK_IMAGE:
+                if (resultCode == RESULT_OK) {
+                    Uri uri = imageReturnedIntent.getData();
+                    BaseImageFragment.getsIntance().setImage(uri);
+                }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    start();
+                } else {
+                    Snackbar.make(mBaseActivityLayout, "Permission Denied.", Snackbar.LENGTH_LONG)
+                            .setAction("Request", new View.OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    checkPermissions();
+                                }
+                            }).show();
+                }
+                return;
+            }
+        }
+    }
+
+    private void start() {
+        launchImagePicker();
+    }
+
+    private void launchImagePicker() {
+
+        Intent i = new Intent(Intent.ACTION_PICK,
+                android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(i, REQ_CODE_PICK_IMAGE);
+    }
+
+    private boolean checkPermissions() {
+        // permission to write to external storage
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    PERMISSIONS_REQUEST_WRITE_EXTERNAL_STORAGE);
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -133,11 +210,13 @@ public class MainActivity extends AppCompatActivity {
         public CharSequence getPageTitle(int position) {
             switch (position) {
                 case 0:
-                    return "SECTION 1";
+                    return getString(R.string.fragment_title_base_image);
                 case 1:
-                    return "SECTION 2";
+                    return getString(R.string.fragment_title_blur_image);
                 case 2:
-                    return "SECTION 3";
+                    return getString(R.string.fragment_title_canny_edges);
+                case 3:
+                    return getString(R.string.fragment_title_contours);
             }
             return null;
         }

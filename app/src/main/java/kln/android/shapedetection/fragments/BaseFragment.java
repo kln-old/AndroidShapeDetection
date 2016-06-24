@@ -37,9 +37,16 @@ public abstract class BaseFragment extends Fragment{
         }
     }
 
-    protected void setImage(final String imagePath) {
+    public void setImage(final String imagePath) {
         if (mImageView != null) {
             mImageView.setImageURI(Uri.fromFile(new File(imagePath)));
         }
     }
+
+    public void setImage(final Uri uri) {
+        if (mImageView != null) {
+            mImageView.setImageURI(uri);
+        }
+    }
+
 }
