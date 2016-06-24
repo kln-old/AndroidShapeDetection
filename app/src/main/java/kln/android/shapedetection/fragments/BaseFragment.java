@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +25,7 @@ public abstract class BaseFragment extends Fragment{
 
     private TextView mTitle = null;
     private ImageView mImageView = null;
+    private Mat mMat = null;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -33,7 +35,16 @@ public abstract class BaseFragment extends Fragment{
         mTitle = (TextView) rootView.findViewById(R.id.section_label);
         mTitle.setText(getString(R.string.fragment_title_default));
         mImageView = (ImageView) rootView.findViewById(R.id.imageView);
+        Log.d("KLN", "onViewCreated....");
+
         return rootView;
+    }
+
+    @Override
+    public void onViewCreated(View view,
+                              Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        displayMatImage();
     }
 
     protected void setTitle(final String title) {
@@ -55,15 +66,23 @@ public abstract class BaseFragment extends Fragment{
     }
 
     public void showMatImage(final Mat mat) {
-        //convert to bitmap & show image
+        mMat = mat;
         getActivity().runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                Bitmap bmp = Bitmap.createBitmap(mat.width(), mat.height(), Bitmap.Config.ARGB_8888);
-                Utils.matToBitmap(mat, bmp, true);
-                mImageView.setImageBitmap(bmp);
+                displayMatImage();
+                show();
             }
         });
+    }
+
+    private void displayMatImage() {
+        if (mMat != null) {
+            //convert to bitmap & show image
+            Bitmap bmp = Bitmap.createBitmap(mMat.width(), mMat.height(), Bitmap.Config.ARGB_8888);
+            Utils.matToBitmap(mMat, bmp, true);
+            mImageView.setImageBitmap(bmp);
+        }
     }
 
     protected abstract void show();
