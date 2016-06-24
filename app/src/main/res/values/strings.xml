@@ -7,4 +7,21 @@
     <string name="fragment_title_blur_image">Blurred Image</string>
     <string name="fragment_title_canny_edges">Edges Detected</string>
     <string name="fragment_title_contours">Contours Detected</string>
+    <string name="preference_category_blur">Blur Image settings</string>
+    <string name="preference_key_blur_kernel">preferenceKeyBlurKernel</string>
+    <string name="preference_title_blur_kernel">Kernel Size</string>
+    <string name="preference_summary_blur_kernel">kernel size used for blurring the image</string>
+    <string name="preference_dialog_title_blur_kernel">Enter blur kernel size</string>
+    <string name="preference_category_canny">Canny Edge Detection Settings</string>
+    <string name="preference_key_canny_otsu">PreferenceKeyCannyOtsu</string>
+    <string name="preference_title_canny_otsu">Use OTSU threshold</string>
+    <string name="preference_summary_canny_otsu">If enabled, uses otsu threshold for canny edge detection</string>
+    <string name="preference_key_canny_threshold_min">PreferenceKeyCannyThresholdMin</string>
+    <string name="preference_title_canny_threshold_min">Canny Min Threshold</string>
+    <string name="preference_summary_canny_threshold_min">min threshold to be used for canny edge detection</string>
+    <string name="preference_dialog_title_canny_threshold_min">Min Threshold</string>
+    <string name="preference_key_canny_threshold_max">PreferenceKeyCannyThresholdMax</string>
+    <string name="preference_title_canny_threshold_max">Canny Max Threshold</string>
+    <string name="preference_summary_canny_threshold_max">max threshold to be used for canny edge detection</string>
+    <string name="preference_dialog_title_canny_threshold_max">Max Threshold</string>
 </resources>

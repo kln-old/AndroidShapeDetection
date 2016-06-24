@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory
+        android:title="@string/preference_category_blur">
+        <EditTextPreference
+            android:key="@string/preference_key_blur_kernel"
+            android:title="@string/preference_title_blur_kernel"
+            android:summary="@string/preference_summary_blur_kernel"
+            android:dialogTitle="@string/preference_dialog_title_blur_kernel" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/preference_category_canny">
+        <CheckBoxPreference
+            android:key="@string/preference_key_canny_otsu"
+            android:title="@string/preference_title_canny_otsu"
+            android:summary="@string/preference_summary_canny_otsu" />
+        <EditTextPreference
+            android:key="@string/preference_key_canny_threshold_min"
+            android:title="@string/preference_title_canny_threshold_min"
+            android:summary="@string/preference_summary_canny_threshold_min"
+            android:dialogTitle="@string/preference_dialog_title_canny_threshold_min" />
+        <EditTextPreference
+            android:key="@string/preference_key_canny_threshold_max"
+            android:title="@string/preference_title_canny_threshold_max"
+            android:summary="@string/preference_summary_canny_threshold_max"
+            android:dialogTitle="@string/preference_dialog_title_canny_threshold_max" />
+    </PreferenceCategory>
+</PreferenceScreen>
