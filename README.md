@@ -23,10 +23,11 @@ following settings options are currently available
     -Type
 
 ## Screenshots
+![Screen Recording] (https://youtu.be/NiuOs8qIXdc)
 
 ![Raw Image](https://github.com/nitheeshkl/AndroidShapeDetection/blob/master/screenshots/raw_img.png)
 
-![Gray scale & Blur](https://github.com/nitheeshkl/AndroidShapeDetection/blob/master/screenshots/gray_scale_blur_img.png)
+![Gray scale & Blur](https://github.com/nitheeshkl/AndroidShapeDetection/blob/master/screenshots/gray_scale_blur.png)
 
 ![Edges detected](https://github.com/nitheeshkl/AndroidShapeDetection/blob/master/screenshots/edges.png)
 
