@@ -108,8 +108,8 @@ public class OpenCvRunnable implements Runnable {
         final Mat hierarchy = new Mat();
         final List<MatOfPoint> contours = new ArrayList<>();
         Scalar red = new Scalar(255, 0, 0);
-        Scalar blue = new Scalar(0, 255, 0);
-        Scalar green = new Scalar(0, 0, 255);
+        Scalar blue = new Scalar(0, 0, 255);
+        Scalar green = new Scalar(0, 255, 0);
         Scalar white = new Scalar(255, 255, 255);
         Scalar yellow = new Scalar(255, 222, 0);
         Scalar black = new Scalar(0, 0, 0);
@@ -146,7 +146,7 @@ public class OpenCvRunnable implements Runnable {
         for (int i = 0; i < contours.size(); i++) {
             // do some approximations to the idenitfied curves
             contour2f = new MatOfPoint2f(contours.get(i).toArray());
-            double approxDistance = 0.05 * Imgproc.arcLength(contour2f, true);
+            double approxDistance = 0.03 * Imgproc.arcLength(contour2f, true);
             MatOfPoint2f approxCurve2f = new MatOfPoint2f();
             Imgproc.approxPolyDP(contour2f, approxCurve2f, approxDistance, true);
             MatOfPoint approxCurve = new MatOfPoint();
@@ -169,7 +169,6 @@ public class OpenCvRunnable implements Runnable {
                 ContoursFragment.getInstance().showMatImage(finalMat);
                 continue;
             }
-
 
             // filter based on number of vertices
             // Log.d(TAG, "number of points = " + approxCurve.total());

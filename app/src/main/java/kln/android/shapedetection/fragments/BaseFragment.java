@@ -1,5 +1,6 @@
 package kln.android.shapedetection.fragments;
 
+import android.app.Activity;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
@@ -109,15 +110,18 @@ public abstract class BaseFragment extends Fragment{
         mMat = mat;
         // this may be called from threads other than main thread, so ensure we are always
         // modifying the UI components on UI thread
-        getActivity().runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                // set our image in the fragment
-                displayMatImage();
-                // show our fragment in the tab/view pager
-                show();
-            }
-        });
+        final Activity activity = getActivity();
+        if (activity != null) {
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    // set our image in the fragment
+                    displayMatImage();
+                    // show our fragment in the tab/view pager
+                    show();
+                }
+            });
+        }
     }
 
     /**
