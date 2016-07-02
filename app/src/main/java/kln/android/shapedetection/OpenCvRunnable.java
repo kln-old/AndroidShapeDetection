@@ -55,6 +55,21 @@ public class OpenCvRunnable implements Runnable {
     private int mContourType;
 
     /**
+     * Min area size to ignore
+     */
+    private int mShapeIgnoreSize;
+
+    /**
+     * Indicate if concave shapes are to be ignored
+     */
+    private boolean mShapeIgnoreConcave;
+
+    /**
+     * Indicate if filtered shapes are to be ignored from drawing
+     */
+    private boolean mdrawFilteredShapes;
+
+    /**
      * Constructor
      * @param imagePath
      * @param blurKernelSize
@@ -62,13 +77,19 @@ public class OpenCvRunnable implements Runnable {
      * @param cannyThresholdMax
      * @param useOtsuThreshold
      * @param contouType
+     * @param shapeIgnoreSize
+     * @param shapeIgnoreConcave
+     * @param drawFilteredShapes
      */
     public OpenCvRunnable(final String imagePath,
                           final int blurKernelSize,
                           final int cannyThresholdMin,
                           final int cannyThresholdMax,
                           final boolean useOtsuThreshold,
-                          final int contouType) {
+                          final int contouType,
+                          final int shapeIgnoreSize,
+                          final boolean shapeIgnoreConcave,
+                          final boolean drawFilteredShapes) {
 
         mImagePath = imagePath;
         mBlurKernelSize = blurKernelSize;
@@ -94,6 +115,9 @@ public class OpenCvRunnable implements Runnable {
             default:
                 mContourType = Imgproc.RETR_EXTERNAL;
         }
+        mShapeIgnoreSize = shapeIgnoreSize;
+        mShapeIgnoreConcave = shapeIgnoreConcave;
+        mdrawFilteredShapes = drawFilteredShapes;
     }
 
     /**
@@ -153,20 +177,24 @@ public class OpenCvRunnable implements Runnable {
             approxCurve2f.convertTo(approxCurve, CvType.CV_32S);
 
             // skip small areas
-            if (Math.abs(Imgproc.contourArea(contour2f)) < 3000) {
+            if (Math.abs(Imgproc.contourArea(contour2f)) < mShapeIgnoreSize) {
                 Log.d(TAG, "small shape...skipping");
                 // show for debugging visualization
-                Imgproc.drawContours(finalMat, contours, i, white, 3, 8, hierarchy, 0, new Point(0, 0));
-                ContoursFragment.getInstance().showMatImage(finalMat);
+                if (mdrawFilteredShapes) {
+                    Imgproc.drawContours(finalMat, contours, i, white, 3, 8, hierarchy, 0, new Point(0, 0));
+                    ContoursFragment.getInstance().showMatImage(finalMat);
+                }
                 continue;
             }
 
             // skip if concave
-            if (!Imgproc.isContourConvex(approxCurve)) {
+            if (mShapeIgnoreConcave && !Imgproc.isContourConvex(approxCurve)) {
                 Log.d(TAG, "concave shape...skipping");
                 // show for debugging visualization
-                Imgproc.drawContours(finalMat, contours, i, green, 3, 8, hierarchy, 0, new Point(0, 0));
-                ContoursFragment.getInstance().showMatImage(finalMat);
+                if (mdrawFilteredShapes) {
+                    Imgproc.drawContours(finalMat, contours, i, green, 3, 8, hierarchy, 0, new Point(0, 0));
+                    ContoursFragment.getInstance().showMatImage(finalMat);
+                }
                 continue;
             }
 

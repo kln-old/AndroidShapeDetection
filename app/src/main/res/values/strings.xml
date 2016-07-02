@@ -42,5 +42,16 @@
     <string name="preference_entry_value_contours_type_ccomp">2</string>
     <string name="preference_entry_value_contours_type_tree">3</string>
     <string name="preference_entry_value_contours_type_floodfill">4</string>
+    <string name="preference_key_contours_ignore_area_size">PreferenceKeyContoursIgnoreAreaSize</string>
+    <string name="preference_title_contours_ignore_area_size">Ignore Area size</string>
+    <string name="preference_summary_contours_ignore_area_size">Ignore shapes with area size less than this value</string>
+    <string name="preference_dialog_title_contours_ignore_area_size">Enter area size to ignore</string>
+    <string name="preference_default_contours_ignore_area_size">3000</string>
+    <string name="preference_key_contours_ignore_concave">PreferenceKeyContoursIgnoreConcave</string>
+    <string name="preference_title_contours_ignore_concave">Ignore concave shapes</string>
+    <string name="preference_summary_contours_ignore_concave">Enabling this will ignore any shapes that are concave</string>
+    <string name="preference_key_contours_draw_filtered_shapes">PreferencesKeyContoursDrawFilteredShapes</string>
+    <string name="preference_title_contours_draw_filtered_shapes">Draw filtered Shapes</string>
+    <string name="preference_summary_contours_draw_filtered_shapes">Draw all the filtered contours from above settings</string>
 
 </resources>

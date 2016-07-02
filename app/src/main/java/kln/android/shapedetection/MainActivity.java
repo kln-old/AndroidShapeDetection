@@ -299,9 +299,21 @@ public class MainActivity extends AppCompatActivity {
                 getString(R.string.preference_default_value_canny_threshold_max)));
         final int contourType = Integer.parseInt(preferences.getString(getString(R.string.preference_key_contours_type),
                 getString(R.string.preference_entry_value_contours_type_external)));
+        final int shapeIgnoreSize = Integer.parseInt(preferences.getString(getString(R.string.preference_key_contours_ignore_area_size),
+                getString(R.string.preference_default_contours_ignore_area_size)));
+        final boolean shapreIgnoreConcave = preferences.getBoolean(getString(R.string.preference_key_contours_ignore_concave), true);
+        final boolean drawFilteredShapes = preferences.getBoolean(getString(R.string.preference_key_contours_draw_filtered_shapes), true);
 
         // instantiate our opencv runnable
-        OpenCvRunnable cvRunnable = new OpenCvRunnable(getPathFromUri(mBaseImageUri), blurKernelSize, cannyMinThreshold, cannyMaxThreshold, useOtsu, contourType);
+        OpenCvRunnable cvRunnable = new OpenCvRunnable(getPathFromUri(mBaseImageUri),
+                                                        blurKernelSize,
+                                                        cannyMinThreshold,
+                                                        cannyMaxThreshold,
+                                                        useOtsu,
+                                                        contourType,
+                                                        shapeIgnoreSize,
+                                                        shapreIgnoreConcave,
+                                                        drawFilteredShapes);
         // opencv actions are cpu demanding !!
         // so, run all opencv actions on a separate thread so that our main thread is not blocked.
         Thread cvThread = new Thread(cvRunnable);

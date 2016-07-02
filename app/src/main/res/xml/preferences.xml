@@ -44,6 +44,27 @@
             android:entryValues="@array/preference_entry_values_contours_type"
             android:dialogTitle="@string/preference_dialog_title_contours_type"
             android:defaultValue="@string/preference_entry_value_contours_type_external"/>
+
+        <EditTextPreference
+            android:key="@string/preference_key_contours_ignore_area_size"
+            android:title="@string/preference_title_contours_ignore_area_size"
+            android:summary="@string/preference_summary_contours_ignore_area_size"
+            android:dialogTitle="@string/preference_dialog_title_contours_ignore_area_size"
+            android:defaultValue="@string/preference_default_contours_ignore_area_size"
+            android:inputType="number"/>
+
+        <CheckBoxPreference
+            android:key="@string/preference_key_contours_ignore_concave"
+            android:title="@string/preference_title_contours_ignore_concave"
+            android:summary="@string/preference_summary_contours_ignore_concave"
+            android:defaultValue="true"/>
+
+        <CheckBoxPreference
+            android:key="@string/preference_key_contours_draw_filtered_shapes"
+            android:title="@string/preference_title_contours_draw_filtered_shapes"
+            android:summary="@string/preference_summary_contours_draw_filtered_shapes"
+            android:defaultValue="true"/>
+
     </PreferenceCategory>
 
 </PreferenceScreen>
