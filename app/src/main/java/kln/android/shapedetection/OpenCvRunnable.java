@@ -2,11 +2,13 @@ package kln.android.shapedetection;
 
 import android.util.Log;
 
+import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfPoint;
 import org.opencv.core.MatOfPoint2f;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.core.Size;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -109,6 +111,7 @@ public class OpenCvRunnable implements Runnable {
         Scalar blue = new Scalar(0, 255, 0);
         Scalar green = new Scalar(0, 0, 255);
         Scalar white = new Scalar(255, 255, 255);
+        Scalar yellow = new Scalar(255, 222, 0);
         Scalar black = new Scalar(0, 0, 0);
 
         // show original image
@@ -167,13 +170,20 @@ public class OpenCvRunnable implements Runnable {
                 continue;
             }
 
+
             // filter based on number of vertices
+            // Log.d(TAG, "number of points = " + approxCurve.total());
             int vertices = approxCurve.height();
             Log.d(TAG, "Vertices = " + vertices);
             if (vertices == 4) {
                 Log.d(TAG, "Found rectangle");
                 //Imgproc.drawContours(detectedEdges, contours, i, white, -1);
                 Imgproc.drawContours(finalMat, contours, i, red, 3, 8, hierarchy, 0, new Point(0, 0));
+                // draw bounding rectangle around our selected contour
+                Rect boundingRect = Imgproc.boundingRect(approxCurve);
+                Imgproc.rectangle(finalMat, new Point(boundingRect.x - 5 , boundingRect.y - 5),
+                        new Point(boundingRect.x + boundingRect.width + 5 , boundingRect.y + boundingRect.height + 5),
+                        yellow, 3);
                 ContoursFragment.getInstance().showMatImage(finalMat);
             } else {
                 Imgproc.drawContours(finalMat, contours, i, blue, 3, 8, hierarchy, 0, new Point(0, 0));
